@@ -8,20 +8,20 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import org.koin.mp.KoinPlatform
 import ru.stepa.alice.core.*
+import ru.stepa.services.RedirectService
 
 val VALORANT_START_ROUTING = arrayOf("запусти valorant")
 
 fun Application.configureRouting() {
+    val redirectService = KoinPlatform.getKoin().get<RedirectService>()
     routing {
         post("/") {
             val aliceFullRequest = call.receive<AliceFullRequest>()
-            val response = aliceHandle(aliceFullRequest)
-            call.respond(response)
+            call.respond(aliceHandle(aliceFullRequest))
         }
     }
 
     aliceRouting {
-        val channel: SendChannel<AliceFullRequest> = KoinPlatform.getKoin().get()
         welcome { _ ->
             Response(
                 text = "Рад вас видеть",
@@ -30,13 +30,20 @@ fun Application.configureRouting() {
         }
 
         command(*VALORANT_START_ROUTING) { aliceRequest ->
-            launch {
-                channel.send(aliceRequest)
-            }
+            redirectService.sendToWebsocketService(aliceRequest)
             Response(
                 text = "Запускаю valorant",
                 endSession = false
             )
         }
+
+        default {aliceRequest ->
+            redirectService.sendToWebsocketService(aliceRequest)
+            Response(
+                text = "Выполняю вышу команду",
+                endSession = false
+            )
+        }
+
     }
 }

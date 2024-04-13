@@ -39,6 +39,8 @@ tasks.jar {
 }
 
 dependencies {
+    implementation(project(":alice"))
+    implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-server-core-jvm")
     implementation("io.ktor:ktor-server-content-negotiation-jvm")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm")
@@ -48,4 +50,5 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     implementation("io.insert-koin:koin-ktor:$koin_version")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
 }

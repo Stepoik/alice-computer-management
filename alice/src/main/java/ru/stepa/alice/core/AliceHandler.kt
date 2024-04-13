@@ -7,6 +7,7 @@ annotation class AliceDsl
 
 object AliceHandler {
     private val registeredCommands = mutableMapOf<String, Handler>()
+    private var unknownHandler: Handler? = null
 
     internal fun createCommand(vararg commands: String, body: Handler) {
         for (i in commands) {
@@ -14,11 +15,20 @@ object AliceHandler {
         }
     }
 
+    internal fun registerUnknownCommand(body: Handler) {
+        unknownHandler = body
+    }
+
     suspend fun handle(aliceFullRequest: AliceFullRequest): AliceResponse {
         val command = aliceFullRequest.request.command
-        println("Is command empty: ${command.isEmpty()}")
-        println(registeredCommands.containsKey(command))
-        val handler = registeredCommands[command] ?: return AliceResponse.unknownCommand(aliceFullRequest)
+        val handler = registeredCommands[command] ?:
+            return unknownHandler?.let { defaultHandler ->
+                AliceResponse(
+                    version = aliceFullRequest.version,
+                    session = aliceFullRequest.session,
+                    response = defaultHandler(aliceFullRequest)
+                )
+            } ?: AliceResponse.unknownCommand(aliceFullRequest)
         val response = handler(aliceFullRequest)
         return AliceResponse(
             version = aliceFullRequest.version,
@@ -36,6 +46,11 @@ fun AliceHandler.command(vararg commands: String, body: Handler) {
 @AliceDsl
 fun AliceHandler.welcome(body: Handler) {
     command("", body = body)
+}
+
+@AliceDsl
+fun AliceHandler.default(body: Handler) {
+    registerUnknownCommand(body)
 }
 
 suspend fun aliceHandle(aliceFullRequest: AliceFullRequest): AliceResponse {

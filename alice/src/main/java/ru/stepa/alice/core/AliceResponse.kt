@@ -1,6 +1,5 @@
 package ru.stepa.alice.core
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
