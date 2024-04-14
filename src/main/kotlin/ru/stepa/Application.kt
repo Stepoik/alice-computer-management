@@ -8,9 +8,11 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
+import org.koin.mp.KoinPlatform
 import ru.stepa.alice.core.AliceFullRequest
 import ru.stepa.plugins.*
 import ru.stepa.routing.configureRouting
+import ru.stepa.security.configureSecurity
 import ru.stepa.services.redirectModule
 
 val channelModule = module {
@@ -30,4 +32,5 @@ fun main() {
 fun Application.module() {
     configureSerialization()
     configureRouting()
+    configureSecurity(KoinPlatform.getKoin().get())
 }
